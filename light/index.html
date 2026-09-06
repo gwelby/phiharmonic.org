@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05080b">
+  <link rel="icon" type="image/png" href="/field/assets/codex-emblem.png">
+  <meta name="description" content="An interactive lab showing how light can be slowed, stored as atomic coherence, and retrieved in an ultracold medium.">
+  <title>Light, slowed / stored / returned | Phiharmonic</title>
+  <link rel="canonical" href="https://phiharmonic.org/light/">
+
+  <meta property="og:title" content="Light, slowed / stored / returned | Phiharmonic">
+  <meta property="og:description" content="Interactive slow-light lab: move, compress, store, and retrieve an optical pulse in an ultracold atomic medium.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://phiharmonic.org/light/">
+  <meta property="og:image" content="https://phiharmonic.org/assets/phiharmonic-preview.png">
+  <meta property="og:site_name" content="Phiharmonic">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #05080b;
+      --ink-2: #0b1216;
+      --paper: #f4f7f8;
+      --steel: #b8c1c8;
+      --steel-dim: #6e7a82;
+      --cyan: #48d8eb;
+      --cyan-soft: #8ce9f2;
+      --coral: #ff743d;
+      --coral-soft: #ffc28f;
+      --green: #5cdb8b;
+      --border: rgba(184, 193, 200, 0.16);
+      --radius: 8px;
+      --max-inner: 1150px;
+      --nav-h: 56px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+
+    a:hover {
+      color: var(--cyan-soft);
+    }
+
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
+    /* Nav */
+    .top-nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
+      background: rgba(5, 8, 11, 0.94);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-inner {
+      max-width: var(--max-inner);
+      margin: 0 auto;
+      padding: 0 1.25rem;
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .nav-logo {
+      color: var(--paper);
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .nav-logo span {
+      color: var(--cyan);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-links a {
+      display: block;
+      padding: 0.35rem 0.65rem;
+      color: var(--steel);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border-radius: 999px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--paper);
+      background: rgba(184, 193, 200, 0.1);
+    }
+
+    .nav-links a[aria-current="page"] {
+      color: var(--ink);
+      background: var(--cyan);
+    }
+
+    /* Layout */
+    main {
+      padding-top: var(--nav-h);
+    }
+
+    .band {
+      padding: 3.5rem 1.25rem;
+    }
+
+    .inner {
+      max-width: var(--max-inner);
+      margin: 0 auto;
+    }
+
+    /* Hero */
+    .hero {
+      padding-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin: 0 0 0.75rem;
+    }
+
+    .hero h1 .slashed {
+      color: var(--cyan);
+    }
+
+    .hero .lead {
+      color: var(--steel);
+      font-size: 1.1rem;
+      max-width: 640px;
+      margin: 0;
+    }
+
+    /* Lab */
+    .lab {
+      background: var(--ink-2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lab-header {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .lab-label {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--steel-dim);
+      letter-spacing: 0;
+    }
+
+    .segmented {
+      display: inline-flex;
+      gap: 0.25rem;
+      padding: 0.25rem;
+      background: rgba(184, 193, 200, 0.08);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+
+    .segmented button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--steel);
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 500;
+      padding: 0.55rem 1rem;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .segmented button[aria-pressed="true"] {
+      background: var(--cyan);
+      color: var(--ink);
+    }
+
+    .segmented button:hover:not([aria-pressed="true"]) {
+      background: rgba(184, 193, 200, 0.12);
+      color: var(--paper);
+    }
+
+    .canvas-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 8;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 40%, rgba(72, 216, 235, 0.05), transparent 60%);
+    }
+
+    #lab-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--steel-dim);
+    }
+
+    .legend .key {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .key::before {
+      content: "";
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 50%;
+    }
+
+    .key.cyan::before { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+    .key.coral::before { background: var(--coral); opacity: 0.85; }
+    .key.steel::before { background: var(--steel); opacity: 0.5; }
+
+    .copy-panel {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      background: rgba(184, 193, 200, 0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .copy-panel h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin: 0 0 0.75rem;
+    }
+
+    .copy-panel p {
+      margin: 0;
+      color: var(--steel);
+      line-height: 1.7;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.68rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      padding: 0.2rem 0.45rem;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 0.35rem;
+    }
+
+    .badge.established {
+      color: var(--ink);
+      background: var(--green);
+    }
+
+    .badge.open {
+      color: var(--paper);
+      background: var(--coral);
+    }
+
+    /* Sections */
+    .section-title {
+      font-size: 0.75rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--steel-dim);
+      margin-bottom: 0.5rem;
+    }
+
+    h2.section-heading {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin: 0 0 1rem;
+    }
+
+    .fact-list, .ref-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .fact-list li, .ref-list li {
+      padding: 1.25rem;
+      background: rgba(184, 193, 200, 0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .ref-list em {
+      font-style: italic;
+    }
+
+    .open-note {
+      margin-top: 1.25rem;
+      padding: 1rem 1.25rem;
+      border-left: 3px solid var(--coral);
+      background: rgba(255, 116, 61, 0.06);
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+
+    .open-note p {
+      margin: 0;
+      color: var(--steel);
+    }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 1.25rem;
+      color: var(--steel-dim);
+      font-size: 0.85rem;
+    }
+
+    .site-footer .inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .footer-links a {
+      color: var(--steel);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--paper);
+      text-decoration: underline;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .nav-links a,
+      .segmented button {
+        transition: none;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 720px) {
+      :root { --nav-h: 52px; }
+      .nav-inner { padding: 0 0.75rem; }
+      .nav-links a { font-size: 0.82rem; padding: 0.3rem 0.5rem; }
+      .hero h1 { font-size: 1.7rem; }
+      .hero .lead { font-size: 1rem; }
+      .band { padding: 2rem 0.75rem; }
+      .segmented button { font-size: 0.85rem; padding: 0.45rem 0.75rem; }
+      .copy-panel { padding: 1rem; }
+      .copy-panel h2 { font-size: 1.2rem; }
+      .section-heading { font-size: 1.35rem; }
+      .canvas-wrap { aspect-ratio: 16 / 10; }
+    }
+
+    @media (min-width: 1440px) {
+      .hero h1 { font-size: 2.6rem; }
+      .hero .lead { font-size: 1.15rem; }
+      .copy-panel h2 { font-size: 1.5rem; }
+    }
+
+    @media (max-width: 390px) {
+      .nav-logo { font-size: 0.9rem; }
+      .nav-links a { font-size: 0.75rem; padding: 0.25rem 0.4rem; }
+      .hero h1 { font-size: 1.55rem; }
+      .segmented button { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-nav">
+    <nav class="nav-inner" aria-label="Primary">
+      <a class="nav-logo" href="/">Phi<span>harmonic</span></a>
+      <ul class="nav-links">
+        <li><a href="/">Studio</a></li>
+        <li><a href="/field/">Field</a></li>
+        <li><a href="/light/" aria-current="page">Light</a></li>
+        <li><a href="/research/">Research</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="band hero" aria-labelledby="page-title">
+      <div class="inner">
+        <h1 id="page-title">Light, <span class="slashed">slowed / stored / returned</span></h1>
+        <p class="lead">A compact interactive lab for electromagnetically induced transparency: an optical pulse enters an ultracold atomic cloud, slows down, is mapped into atomic coherence, and is read back out.</p>
+      </div>
+    </section>
+
+    <section class="band lab" aria-label="Interactive light lab">
+      <div class="inner">
+        <div class="lab-header">
+          <span class="lab-label">Mode</span>
+          <div class="segmented" role="group" aria-label="Light states">
+            <button id="btn-move" type="button" aria-pressed="true" aria-controls="lab-canvas" data-mode="move">Move</button>
+            <button id="btn-compress" type="button" aria-pressed="false" aria-controls="lab-canvas" data-mode="compress">Compress</button>
+            <button id="btn-store" type="button" aria-pressed="false" aria-controls="lab-canvas" data-mode="store">Store</button>
+            <button id="btn-retrieve" type="button" aria-pressed="false" aria-controls="lab-canvas" data-mode="retrieve">Retrieve</button>
+          </div>
+        </div>
+
+        <div class="canvas-wrap">
+          <canvas id="lab-canvas" role="img" aria-label="Optical pulse moving through an ultracold atomic medium"></canvas>
+          <noscript>
+            <p style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--steel); padding:1rem; text-align:center;">JavaScript is required to run the interactive pulse lab.</p>
+          </noscript>
+        </div>
+
+        <div class="legend" aria-hidden="true">
+          <span class="key cyan">Probe pulse</span>
+          <span class="key coral">Coupling beam</span>
+          <span class="key steel">Atomic medium</span>
+        </div>
+
+        <article class="copy-panel" aria-live="polite" aria-atomic="true">
+          <h2 id="mode-title"><span class="badge established">Established</span>Pulse in free flight</h2>
+          <p id="mode-copy">A light pulse is a travelling envelope of electromagnetic energy. In vacuum its group velocity is essentially c, the fixed speed of light in empty space. The ultracold sodium cloud is still ahead of the pulse.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="band" aria-labelledby="facts-title">
+      <div class="inner">
+        <p class="section-title">Scope</p>
+        <h2 id="facts-title" class="section-heading">What this does and does not mean</h2>
+        <ul class="fact-list">
+          <li>
+            <span class="badge established">Established</span>
+            The vacuum speed of light, <strong>c</strong>, was not changed. These experiments alter the group velocity of light inside a medium; the fundamental constant in empty space remains the same.
+          </li>
+          <li>
+            <span class="badge established">Established</span>
+            Storage is coherent information transferred to a collective atomic excitation, not light being converted into ordinary matter.
+          </li>
+          <li>
+            <span class="badge established">Established</span>
+            Slow light and quantum memory are well-studied phenomena. They are not being offered here as validation of the Propagation Framework.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="band" style="background: var(--ink-2); border-top: 1px solid var(--border);" aria-labelledby="refs-title">
+      <div class="inner">
+        <p class="section-title">Sources</p>
+        <h2 id="refs-title" class="section-heading">Primary sources</h2>
+        <ul class="ref-list">
+          <li>
+            <span class="badge established">Established</span>
+            Hau, L. V., Harris, S. E., Dutton, Z. &amp; Behroozi, C. H. Light speed reduction to 17 metres per second in an ultracold atomic gas. <em>Nature</em> <strong>397</strong>, 594–598 (1999).
+            <a href="https://doi.org/10.1038/17561" target="_blank" rel="noopener">DOI 10.1038/17561</a>
+          </li>
+          <li>
+            <span class="badge established">Established</span>
+            Liu, C., Dutton, Z., Behroozi, C. H. &amp; Hau, L. V. Observation of coherent optical information storage in an atomic medium using halted light pulses. <em>Nature</em> <strong>409</strong>, 490–493 (2001).
+            <a href="https://doi.org/10.1038/35054017" target="_blank" rel="noopener">DOI 10.1038/35054017</a>
+          </li>
+        </ul>
+        <div class="open-note">
+          <p><span class="badge open">Open question</span> How far can atomic quantum memory be scaled before decoherence and noise dominate? This page is a didactic model, not a laboratory measurement.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <ul class="footer-links" aria-label="Site map">
+        <li><a href="/">Studio</a></li>
+        <li><a href="/field/">Field</a></li>
+        <li><a href="/light/">Light</a></li>
+        <li><a href="/research/">Research</a></li>
+      </ul>
+      <p>Phiharmonic — patterns through sound, light, matter, and attention.</p>
+    </div>
+  </footer>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const canvas = document.getElementById("lab-canvas");
+      if (!canvas || !canvas.getContext) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let reducedMotion = reducedMotionQuery.matches;
+
+      const modeTitle = document.getElementById("mode-title");
+      const modeCopy = document.getElementById("mode-copy");
+      const buttons = Array.from(document.querySelectorAll(".segmented button[data-mode]"));
+
+      const MODES = {
+        move: {
+          rangeFactor: 0.44,
+          width: 230,
+          amplitude: 1,
+          speed: 1.85,
+          coupling: 1,
+          excitation: 0,
+          phase: Math.PI,
+          title: "Pulse in free flight",
+          badge: "established",
+          copy: "A light pulse is a travelling envelope of electromagnetic energy. In vacuum its group velocity is essentially c, the fixed speed of light in empty space. The ultracold sodium cloud is still ahead of the pulse."
+        },
+        compress: {
+          rangeFactor: 0.18,
+          width: 66,
+          amplitude: 1,
+          speed: 0.30,
+          coupling: 1,
+          excitation: 0,
+          phase: 0,
+          title: "Slowed inside the medium",
+          badge: "established",
+          copy: "Inside an electromagnetically-induced-transparency cloud the group velocity drops while the vacuum speed c stays unchanged. The leading edge of the pulse slows before the trailing edge arrives, so the pulse is spatially compressed."
+        },
+        store: {
+          rangeFactor: 0,
+          width: 56,
+          amplitude: 0,
+          speed: 0,
+          coupling: 0,
+          excitation: 1,
+          phase: 0,
+          title: "Coherent mapping to atoms",
+          badge: "established",
+          copy: "When the coupling beam is turned off, the pulse is extinguished and its coherent information is transferred into a collective atomic spin excitation. This is not ordinary matter conversion; it is a stored quantum pattern that can be read back out."
+        },
+        retrieve: {
+          rangeFactor: 0.34,
+          width: 210,
+          amplitude: 1,
+          speed: 1.85,
+          coupling: 1,
+          excitation: 0,
+          phase: Math.PI / 2,
+          title: "Read-out as light again",
+          badge: "established",
+          copy: "Restoring the coupling beam regenerates an optical pulse from the atomic coherence. In the cited experiment, that retrieval demonstrated coherent optical-information storage in the atomic medium."
+        }
+      };
+
+      const state = {
+        mode: "move",
+        width: 0,
+        height: 0,
+        dpr: 1,
+        mediumLeft: 0,
+        mediumRight: 0,
+        mediumCenter: 0,
+        phase: Math.PI,
+        range: 0,
+        pulseWidth: 200,
+        amplitude: 1,
+        coupling: 1,
+        atoms: []
+      };
+
+      let lastTime = performance.now();
+      let rafId = null;
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        state.width = Math.max(1, Math.round(rect.width));
+        state.height = Math.max(1, Math.round(rect.height));
+        state.dpr = dpr;
+        canvas.width = state.width * dpr;
+        canvas.height = state.height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const margin = state.width * 0.10;
+        state.mediumLeft = margin;
+        state.mediumRight = state.width - margin;
+        state.mediumCenter = (state.mediumLeft + state.mediumRight) / 2;
+
+        buildAtoms();
+        if (reducedMotion) render();
+      }
+
+      function buildAtoms() {
+        const spacing = Math.max(18, state.width / 32);
+        const rows = Math.max(3, Math.floor(state.height / spacing));
+        const cols = Math.max(8, Math.floor((state.mediumRight - state.mediumLeft) / spacing));
+        const atoms = [];
+        const y0 = (state.height - (rows - 1) * spacing) / 2;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = state.mediumLeft + (c + 0.5) * ((state.mediumRight - state.mediumLeft) / cols);
+            const y = y0 + r * spacing;
+            const jitter = ((r * 17 + c * 31) % 7) / 7;
+            atoms.push({
+              x: x,
+              y: y,
+              ex: 0,
+              jitter: jitter,
+              baseR: 2.2 + jitter * 1.2
+            });
+          }
+        }
+        state.atoms = atoms;
+      }
+
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function expSmooth(current, target, rate, dt) {
+        const k = Math.min(1, 1 - Math.exp(-rate * dt));
+        return lerp(current, target, k);
+      }
+
+      function getTargetRange(mode) {
+        if (mode === "store") return 0;
+        if (mode === "compress") return (state.mediumRight - state.mediumLeft) * MODES.compress.rangeFactor;
+        return state.width * MODES[mode].rangeFactor;
+      }
+
+      function updateParams(dt) {
+        const cfg = MODES[state.mode];
+        const targetRange = getTargetRange(state.mode);
+        const smoothRate = reducedMotion ? 12 : 4;
+
+        state.range = expSmooth(state.range, targetRange, smoothRate, dt);
+        state.pulseWidth = expSmooth(state.pulseWidth, cfg.width, smoothRate, dt);
+        state.amplitude = expSmooth(state.amplitude, cfg.amplitude, smoothRate, dt);
+        state.coupling = expSmooth(state.coupling, cfg.coupling, smoothRate, dt);
+
+        if (reducedMotion) {
+          state.phase = cfg.phase;
+        } else {
+          state.phase += cfg.speed * dt;
+        }
+
+        const centerX = state.mediumCenter + Math.cos(state.phase) * state.range;
+        const pulseW = Math.max(20, state.pulseWidth);
+
+        for (const atom of state.atoms) {
+          const dist = atom.x - centerX;
+          const envelope = Math.exp(-(dist * dist) / (pulseW * pulseW));
+          const targetEx = cfg.excitation * envelope;
+          atom.ex = expSmooth(atom.ex, targetEx, smoothRate, dt);
+        }
+      }
+
+      function drawMedium() {
+        ctx.save();
+        ctx.fillStyle = "rgba(184, 193, 200, 0.06)";
+        ctx.strokeStyle = "rgba(184, 193, 200, 0.22)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 5]);
+        ctx.fillRect(state.mediumLeft, state.height * 0.12, state.mediumRight - state.mediumLeft, state.height * 0.76);
+        ctx.strokeRect(state.mediumLeft, state.height * 0.12, state.mediumRight - state.mediumLeft, state.height * 0.76);
+        ctx.restore();
+      }
+
+      function drawCoupling() {
+        if (state.coupling < 0.01) return;
+        const alpha = 0.06 + 0.16 * state.coupling;
+        const grad = ctx.createLinearGradient(state.mediumLeft, 0, state.mediumRight, 0);
+        grad.addColorStop(0, "rgba(255, 116, 61, 0)");
+        grad.addColorStop(0.5, `rgba(255, 116, 61, ${alpha})`);
+        grad.addColorStop(1, "rgba(255, 116, 61, 0)");
+        ctx.save();
+        ctx.fillStyle = grad;
+        ctx.fillRect(state.mediumLeft, state.height * 0.12, state.mediumRight - state.mediumLeft, state.height * 0.76);
+        ctx.restore();
+      }
+
+      function drawAtoms() {
+        for (const atom of state.atoms) {
+          const r = atom.baseR + atom.ex * 2.2;
+          const steel = [184, 193, 200];
+          const coral = [255, 116, 61];
+          const mix = [lerp(steel[0], coral[0], atom.ex), lerp(steel[1], coral[1], atom.ex), lerp(steel[2], coral[2], atom.ex)];
+          const alpha = 0.35 + 0.55 * (1 - atom.ex) + 0.85 * atom.ex;
+
+          ctx.save();
+          ctx.fillStyle = `rgba(${mix[0]}, ${mix[1]}, ${mix[2]}, ${alpha})`;
+          if (atom.ex > 0.05) {
+            ctx.shadowColor = `rgba(255, 116, 61, ${0.4 + atom.ex * 0.5})`;
+            ctx.shadowBlur = 8 + atom.ex * 14;
+          }
+          ctx.beginPath();
+          ctx.arc(atom.x, atom.y, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function drawPulse() {
+        const amp = state.amplitude;
+        if (amp < 0.005) return;
+        const centerX = state.mediumCenter + Math.cos(state.phase) * state.range;
+        const w = Math.max(20, state.pulseWidth);
+        const cy = state.height / 2;
+        const k = 0.13;
+        const waveSpeed = 22;
+        const amplitudeScale = Math.min(state.height * 0.20, 60);
+
+        ctx.save();
+        ctx.shadowColor = "rgba(72, 216, 235, 0.75)";
+        ctx.shadowBlur = 18;
+        ctx.strokeStyle = "rgba(72, 216, 235, 0.95)";
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+
+        const step = 2;
+        const time = performance.now() / 1000;
+        for (let x = 0; x <= state.width; x += step) {
+          const dx = x - centerX;
+          const envelope = Math.exp(-(dx * dx) / (w * w));
+          const carrier = Math.sin(dx * k - time * waveSpeed);
+          const y = cy + carrier * envelope * amplitudeScale * amp;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+        const fillGrad = ctx.createLinearGradient(0, cy - amplitudeScale, 0, cy + amplitudeScale);
+        fillGrad.addColorStop(0, "rgba(72, 216, 235, 0)");
+        fillGrad.addColorStop(0.5, `rgba(72, 216, 235, ${0.22 * amp})`);
+        fillGrad.addColorStop(1, "rgba(72, 216, 235, 0)");
+        ctx.fillStyle = fillGrad;
+        ctx.beginPath();
+        for (let x = 0; x <= state.width; x += step) {
+          const dx = x - centerX;
+          const envelope = Math.exp(-(dx * dx) / (w * w));
+          const y = cy + Math.sin(dx * k - time * waveSpeed) * envelope * amplitudeScale * amp;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.lineTo(state.width, cy);
+        ctx.lineTo(0, cy);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, state.width, state.height);
+        drawMedium();
+        drawCoupling();
+        drawPulse();
+        drawAtoms();
+      }
+
+      function loop(now) {
+        if (reducedMotion) {
+          rafId = null;
+          return;
+        }
+        const dt = Math.min(0.05, (now - lastTime) / 1000);
+        lastTime = now;
+        updateParams(dt);
+        render();
+        rafId = requestAnimationFrame(loop);
+      }
+
+      function setMode(mode) {
+        if (!MODES[mode] || state.mode === mode) return;
+        state.mode = mode;
+        const cfg = MODES[mode];
+        if (reducedMotion) {
+          state.phase = cfg.phase;
+          state.range = getTargetRange(mode);
+          state.pulseWidth = cfg.width;
+          state.amplitude = cfg.amplitude;
+          state.coupling = cfg.coupling;
+          for (const atom of state.atoms) {
+            const dist = atom.x - state.mediumCenter;
+            atom.ex = cfg.excitation * Math.exp(-(dist * dist) / (cfg.width * cfg.width));
+          }
+          render();
+        }
+        updateText(mode);
+        updateButtons(mode);
+        if (!reducedMotion && rafId === null) {
+          lastTime = performance.now();
+          rafId = requestAnimationFrame(loop);
+        }
+      }
+
+      function updateText(mode) {
+        const cfg = MODES[mode];
+        if (!modeTitle || !modeCopy) return;
+        const badgeClass = cfg.badge === "open" ? "open" : "established";
+        const badgeText = cfg.badge === "open" ? "Open question" : "Established";
+        modeTitle.innerHTML = `<span class="badge ${badgeClass}">${badgeText}</span>${escapeHtml(cfg.title)}`;
+        modeCopy.textContent = cfg.copy;
+      }
+
+      function escapeHtml(str) {
+        return str.replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;"}[c]));
+      }
+
+      function updateButtons(activeMode) {
+        for (const btn of buttons) {
+          const isActive = btn.dataset.mode === activeMode;
+          btn.setAttribute("aria-pressed", String(isActive));
+          btn.tabIndex = isActive ? 0 : -1;
+        }
+      }
+
+      function activateButton(btn) {
+        setMode(btn.dataset.mode);
+        btn.focus();
+      }
+
+      buttons.forEach((btn, i) => {
+        btn.addEventListener("click", () => activateButton(btn));
+        btn.addEventListener("keydown", (e) => {
+          let next = null;
+          if (e.key === "ArrowRight") next = buttons[(i + 1) % buttons.length];
+          else if (e.key === "ArrowLeft") next = buttons[(i - 1 + buttons.length) % buttons.length];
+          else if (e.key === "Home") next = buttons[0];
+          else if (e.key === "End") next = buttons[buttons.length - 1];
+          if (next) {
+            e.preventDefault();
+            activateButton(next);
+          }
+        });
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+        if (e.key === "1") setMode("move");
+        else if (e.key === "2") setMode("compress");
+        else if (e.key === "3") setMode("store");
+        else if (e.key === "4") setMode("retrieve");
+      });
+
+      reducedMotionQuery.addEventListener("change", (e) => {
+        reducedMotion = e.matches;
+        if (reducedMotion) {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+          }
+          const cfg = MODES[state.mode];
+          state.phase = cfg.phase;
+          state.range = getTargetRange(state.mode);
+          state.pulseWidth = cfg.width;
+          state.amplitude = cfg.amplitude;
+          state.coupling = cfg.coupling;
+          for (const atom of state.atoms) {
+            const dist = atom.x - state.mediumCenter;
+            atom.ex = cfg.excitation * Math.exp(-(dist * dist) / (cfg.width * cfg.width));
+          }
+          render();
+        } else {
+          lastTime = performance.now();
+          rafId = requestAnimationFrame(loop);
+        }
+      });
+
+      window.addEventListener("resize", resize);
+
+      // Initialize
+      resize();
+      updateText("move");
+      updateButtons("move");
+      if (!reducedMotion) {
+        lastTime = performance.now();
+        rafId = requestAnimationFrame(loop);
+      } else {
+        render();
+      }
+    })();
+  </script>
+</body>
+</html>

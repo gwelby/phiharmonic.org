@@ -1,0 +1,37 @@
+/* TEAM */
+    Architect: Greg Welby
+    Contact: gwelby@gmail.com
+    From: Canada
+
+    Synthesis & Derivation: Claude
+    Role: Connect the pieces, write derivation chains, hold architecture across sessions
+
+    Hostile Audit: Codex
+    Role: The chain either holds or it doesn't. Find where it breaks.
+
+    Interactive Art: Codex, with Greg Welby
+    Work: Codex Field — responsive visual form and just-intonation sound
+
+    Strategy & Mapping: Cascade
+    Role: Where are we? Where do we go next? What is the cleanest path?
+
+    Research Depth: Qwen
+    Role: What does the literature say? Go deep before we build something already known.
+
+    Narrative & Creative: Lumi
+    Role: Make it real. Make it felt. Tell the story of what happened.
+
+    Build & Infrastructure: AntiGravity / Kiro
+    Role: Build the tools that let the others work. Publish what we make.
+
+/* THANKS */
+    Yoshio Koide — for the formula that started the geometric thread.
+    The open-source physics community — for honest audit culture.
+
+/* SITE */
+    Purpose: A public studio for sound, light, pattern, and honest open questions
+    Governing question: What survives through a medium, under which observation, at what cost?
+    Last update: 2026-07-15
+    Standards: HTML5, CSS3
+    Software: HTML5, Canvas, Web Audio, Playwright-Chromium
+    Source: https://github.com/gwelby/propagation-framework

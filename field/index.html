@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05080b">
+  <link rel="icon" type="image/png" href="/field/assets/codex-emblem.png">
+  <meta name="description" content="An interactive visual and just-intonation musical field created by Codex with Greg Welby.">
+  <title>Codex Field | Phiharmonic</title>
+  <link rel="canonical" href="https://phiharmonic.org/field/">
+
+  <meta property="og:title" content="Codex Field">
+  <meta property="og:description" content="Enter a responsive visual and just-intonation musical field.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://phiharmonic.org/field/">
+  <meta property="og:image" content="https://phiharmonic.org/field/assets/field-preview.png">
+  <meta property="og:site_name" content="Phiharmonic">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #05080b;
+      --cyan: #48d8eb;
+      --cyan-soft: #8ce9f2;
+      --ember: #ff743d;
+      --ember-soft: #ffc28f;
+      --steel: #b8c1c8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: 0;
+    }
+
+    body {
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    body.embed #mark {
+      display: none;
+    }
+
+    .image-layer {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      filter: saturate(0.82) contrast(1.08);
+      transition: opacity 1800ms ease;
+    }
+
+    #structure-image {
+      opacity: 0.34;
+    }
+
+    #core-image {
+      opacity: 0;
+    }
+
+    body.core-awake #structure-image {
+      opacity: 0.13;
+    }
+
+    body.core-awake #core-image {
+      opacity: 0.25;
+    }
+
+    #field {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    #mark {
+      position: fixed;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      color: rgba(220, 238, 241, 0.54);
+      font-size: 11px;
+      line-height: 1;
+      text-transform: uppercase;
+      pointer-events: none;
+      transition: opacity 900ms ease;
+    }
+
+    body.engaged #mark {
+      opacity: 0;
+    }
+
+    @media (max-width: 640px) {
+      .image-layer {
+        object-fit: contain;
+      }
+
+      #mark {
+        font-size: 10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .image-layer,
+      #mark {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <img
+    id="structure-image"
+    class="image-layer"
+    src="assets/compilation-array.png"
+    alt=""
+    aria-hidden="true"
+  >
+  <img
+    id="core-image"
+    class="image-layer"
+    src="assets/percussionist.png"
+    alt=""
+    aria-hidden="true"
+  >
+  <canvas id="field" role="application" aria-label="Codex visual and musical field"></canvas>
+  <div id="mark">Codex / Field</div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const canvas = document.querySelector("#field");
+      const ctx = canvas.getContext("2d", { alpha: true });
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const tau = Math.PI * 2;
+      const cyan = [72, 216, 235];
+      const ember = [255, 116, 61];
+      const steel = [184, 193, 200];
+      const ratios = [1, 9 / 8, 5 / 4, 4 / 3, 3 / 2, 5 / 3, 15 / 8, 2];
+
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+      let lastFrame = performance.now();
+      let elapsed = 0;
+      let pointer = { x: 0, y: 0, active: false };
+      let audio = null;
+      let master = null;
+      let limiter = null;
+      let delay = null;
+      let delayFeedback = null;
+      let sequenceTimer = null;
+      let sequenceIndex = 0;
+      let nextVoiceId = 1;
+      let lastInputAt = performance.now();
+      let seedAwaitingEntry = false;
+
+      const voices = [];
+      const pulses = [];
+      const traces = [];
+      const dust = Array.from({ length: 80 }, (_, index) => ({
+        phase: (index / 80) * tau,
+        radius: 0.16 + ((index * 37) % 61) / 100,
+        speed: 0.035 + ((index * 13) % 17) / 1000,
+        weight: 0.3 + ((index * 19) % 11) / 10,
+      }));
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        if (!pointer.active) {
+          pointer.x = width / 2;
+          pointer.y = height / 2;
+        }
+      }
+
+      function rgba(color, alpha) {
+        return `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha})`;
+      }
+
+      function mix(a, b, amount) {
+        return [
+          Math.round(a[0] + (b[0] - a[0]) * amount),
+          Math.round(a[1] + (b[1] - a[1]) * amount),
+          Math.round(a[2] + (b[2] - a[2]) * amount),
+        ];
+      }
+
+      function edgePoint(index, total, side) {
+        const t = (index + 0.5) / total;
+        if (side === 0) return { x: t * width, y: 0 };
+        if (side === 1) return { x: width, y: t * height };
+        if (side === 2) return { x: (1 - t) * width, y: height };
+        return { x: 0, y: (1 - t) * height };
+      }
+
+      function drawStructure(time) {
+        const count = width < 700 ? 7 : 11;
+        const targetX = pointer.active
+          ? pointer.x
+          : width / 2 + Math.cos(time * 0.00019) * width * 0.08;
+        const targetY = pointer.active
+          ? pointer.y
+          : height / 2 + Math.sin(time * 0.00023) * height * 0.08;
+
+        ctx.save();
+        ctx.lineWidth = 0.7;
+        for (let side = 0; side < 4; side += 1) {
+          for (let i = 0; i < count; i += 1) {
+            const start = edgePoint(i, count, side);
+            const variance = Math.sin(time * 0.00032 + i * 0.71 + side) * 18;
+            const endX = targetX + Math.cos((i + side * count) * 1.7) * variance;
+            const endY = targetY + Math.sin((i + side * count) * 1.3) * variance;
+            const controlX = start.x + (endX - start.x) * 0.56;
+            const controlY = start.y + (endY - start.y) * 0.44;
+            const brightness = 0.08 + (i / count) * 0.1;
+
+            ctx.strokeStyle = rgba(cyan, brightness);
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.quadraticCurveTo(controlX, controlY, endX, endY);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+      }
+
+      function drawDust(time) {
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const span = Math.min(width, height) * 0.45;
+
+        for (const mote of dust) {
+          const angle = mote.phase + time * 0.001 * mote.speed;
+          const wave = Math.sin(time * 0.0004 + mote.phase * 3) * span * 0.025;
+          const x = centerX + Math.cos(angle) * (mote.radius * span + wave);
+          const y = centerY + Math.sin(angle * 1.17) * (mote.radius * span + wave);
+          const alpha = 0.08 + 0.08 * Math.sin(time * 0.001 + mote.phase);
+          ctx.fillStyle = rgba(mote.phase > Math.PI ? ember : steel, Math.max(0.02, alpha));
+          ctx.fillRect(x, y, mote.weight, mote.weight);
+        }
+      }
+
+      function drawTraces() {
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        for (let i = traces.length - 1; i >= 0; i -= 1) {
+          const trace = traces[i];
+          trace.life -= 0.014;
+          if (trace.life <= 0) {
+            traces.splice(i, 1);
+            continue;
+          }
+          ctx.lineWidth = 1 + trace.life * 1.2;
+          ctx.strokeStyle = rgba(trace.color, trace.life * 0.38);
+          ctx.beginPath();
+          ctx.moveTo(trace.x1, trace.y1);
+          ctx.lineTo(trace.x2, trace.y2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawPulses() {
+        const maxRadius = Math.hypot(width, height) * 0.38;
+        for (let i = pulses.length - 1; i >= 0; i -= 1) {
+          const pulse = pulses[i];
+          pulse.life -= 0.011;
+          pulse.radius += 2.1 + pulse.force * 1.8;
+          if (pulse.life <= 0 || pulse.radius > maxRadius) {
+            pulses.splice(i, 1);
+            continue;
+          }
+
+          const sides = 6 + (pulse.voiceId % 3);
+          const rotation = pulse.rotation + pulse.radius * 0.0018;
+          ctx.strokeStyle = rgba(pulse.color, pulse.life * 0.5);
+          ctx.lineWidth = 0.8 + pulse.force;
+          ctx.beginPath();
+          for (let side = 0; side <= sides; side += 1) {
+            const angle = rotation + (side / sides) * tau;
+            const x = pulse.x + Math.cos(angle) * pulse.radius;
+            const y = pulse.y + Math.sin(angle) * pulse.radius;
+            if (side === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+      }
+
+      function drawVoices(time) {
+        for (const voice of voices) {
+          const age = (time - voice.createdAt) / 1000;
+          const breath = 1 + Math.sin(time * 0.0014 + voice.phase) * 0.04;
+          const radius = (10 + voice.energy * 12) * breath;
+          const color = mix(cyan, ember, voice.warmth);
+
+          ctx.strokeStyle = rgba(color, 0.2 + voice.energy * 0.2);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(voice.x, voice.y, radius, 0, tau);
+          ctx.stroke();
+
+          const arms = 3 + (voice.id % 5);
+          for (let arm = 0; arm < arms; arm += 1) {
+            const angle = voice.phase + age * voice.direction * 0.12 + (arm / arms) * tau;
+            const inner = radius * 1.2;
+            const outer = radius * (2.2 + voice.energy);
+            ctx.strokeStyle = rgba(color, 0.1 + voice.energy * 0.14);
+            ctx.beginPath();
+            ctx.moveTo(
+              voice.x + Math.cos(angle) * inner,
+              voice.y + Math.sin(angle) * inner
+            );
+            ctx.lineTo(
+              voice.x + Math.cos(angle) * outer,
+              voice.y + Math.sin(angle) * outer
+            );
+            ctx.stroke();
+          }
+        }
+      }
+
+      function drawFrame(time) {
+        const delta = Math.min(48, time - lastFrame);
+        lastFrame = time;
+        elapsed += delta;
+
+        ctx.clearRect(0, 0, width, height);
+        drawStructure(time);
+        drawDust(time);
+        drawTraces();
+        drawPulses();
+        drawVoices(time);
+
+        const idleFor = time - lastInputAt;
+        document.body.classList.toggle("core-awake", voices.length > 0 && idleFor < 18000);
+
+        if (!reducedMotion.matches || pointer.active || pulses.length > 0) {
+          requestAnimationFrame(drawFrame);
+        } else {
+          window.setTimeout(() => requestAnimationFrame(drawFrame), 500);
+        }
+      }
+
+      function ensureAudio() {
+        if (audio) {
+          if (audio.state === "suspended") audio.resume();
+          return;
+        }
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+
+        audio = new AudioContext();
+        master = audio.createGain();
+        limiter = audio.createDynamicsCompressor();
+        delay = audio.createDelay(2);
+        delayFeedback = audio.createGain();
+        const wet = audio.createGain();
+
+        master.gain.value = 0.95;
+        limiter.threshold.value = -6;
+        limiter.knee.value = 0;
+        limiter.ratio.value = 20;
+        limiter.attack.value = 0.003;
+        limiter.release.value = 0.18;
+        delay.delayTime.value = 0.41;
+        delayFeedback.gain.value = 0.27;
+        wet.gain.value = 0.23;
+
+        master.connect(limiter);
+        master.connect(delay);
+        delay.connect(delayFeedback);
+        delayFeedback.connect(delay);
+        delay.connect(wet);
+        wet.connect(limiter);
+        limiter.connect(audio.destination);
+
+        sequenceTimer = window.setInterval(playSequenceStep, 720);
+      }
+
+      function playTone(voice, strength = 0.7) {
+        if (!audio || !master) return;
+
+        const now = audio.currentTime;
+        const oscillator = audio.createOscillator();
+        const overtone = audio.createOscillator();
+        const gain = audio.createGain();
+        const overtoneGain = audio.createGain();
+        const filter = audio.createBiquadFilter();
+
+        oscillator.type = voice.warmth > 0.55 ? "triangle" : "sine";
+        overtone.type = "sine";
+        oscillator.frequency.setValueAtTime(voice.frequency, now);
+        overtone.frequency.setValueAtTime(voice.frequency * 2.005, now);
+        overtoneGain.gain.value = 0.16;
+
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(900 + voice.energy * 1800, now);
+        filter.Q.value = 0.8;
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.11 * strength, now + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.25);
+
+        oscillator.connect(filter);
+        overtone.connect(overtoneGain);
+        overtoneGain.connect(filter);
+        filter.connect(gain);
+        gain.connect(master);
+
+        oscillator.start(now);
+        overtone.start(now);
+        oscillator.stop(now + 1.3);
+        overtone.stop(now + 1.3);
+      }
+
+      function playSequenceStep() {
+        if (voices.length === 0 || document.hidden) return;
+        const voice = voices[sequenceIndex % voices.length];
+        sequenceIndex += 1;
+        playTone(voice, 0.42);
+        pulses.push({
+          x: voice.x,
+          y: voice.y,
+          radius: 3,
+          life: 0.6,
+          force: 0.4,
+          color: mix(cyan, ember, voice.warmth),
+          rotation: voice.phase,
+          voiceId: voice.id,
+        });
+      }
+
+      function addVoice(x, y, force = 0.7, sound = true) {
+        if (sound) ensureAudio();
+        document.body.classList.add("engaged");
+        lastInputAt = performance.now();
+
+        const normalizedX = Math.max(0, Math.min(0.999, x / Math.max(1, width)));
+        const normalizedY = Math.max(0, Math.min(0.999, y / Math.max(1, height)));
+        const scaleIndex = Math.floor((1 - normalizedY) * ratios.length);
+        const octave = normalizedX > 0.72 ? 2 : normalizedX < 0.28 ? 0.5 : 1;
+        const frequency = 110 * ratios[Math.min(ratios.length - 1, scaleIndex)] * octave;
+        const voice = {
+          id: nextVoiceId,
+          x,
+          y,
+          frequency,
+          energy: 0.45 + force * 0.55,
+          warmth: normalizedX,
+          phase: normalizedY * tau + nextVoiceId * 0.41,
+          direction: nextVoiceId % 2 === 0 ? 1 : -1,
+          createdAt: performance.now(),
+        };
+
+        nextVoiceId += 1;
+        voices.push(voice);
+        if (voices.length > 12) voices.shift();
+
+        if (sound) playTone(voice, 0.95);
+        pulses.push({
+          x,
+          y,
+          radius: 4,
+          life: 1,
+          force,
+          color: mix(cyan, ember, voice.warmth),
+          rotation: voice.phase,
+          voiceId: voice.id,
+        });
+      }
+
+      function movePointer(x, y) {
+        const previousX = pointer.x;
+        const previousY = pointer.y;
+        pointer.x = x;
+        pointer.y = y;
+        pointer.active = true;
+        lastInputAt = performance.now();
+
+        if (Math.hypot(x - previousX, y - previousY) > 5) {
+          traces.push({
+            x1: previousX,
+            y1: previousY,
+            x2: x,
+            y2: y,
+            life: 0.8,
+            color: mix(cyan, ember, x / Math.max(1, width)),
+          });
+          if (traces.length > 90) traces.splice(0, traces.length - 90);
+        }
+      }
+
+      function clearField() {
+        voices.length = 0;
+        pulses.length = 0;
+        traces.length = 0;
+        sequenceIndex = 0;
+        lastInputAt = performance.now();
+        document.body.classList.remove("core-awake");
+      }
+
+      canvas.addEventListener("pointermove", event => {
+        movePointer(event.clientX, event.clientY);
+      });
+
+      canvas.addEventListener("pointerdown", event => {
+        canvas.setPointerCapture(event.pointerId);
+        movePointer(event.clientX, event.clientY);
+
+        if (seedAwaitingEntry) {
+          seedAwaitingEntry = false;
+          ensureAudio();
+          playSequenceStep();
+          return;
+        }
+
+        addVoice(event.clientX, event.clientY, event.pressure || 0.7);
+      });
+
+      canvas.addEventListener("pointerup", event => {
+        if (canvas.hasPointerCapture(event.pointerId)) {
+          canvas.releasePointerCapture(event.pointerId);
+        }
+      });
+
+      canvas.addEventListener("pointerleave", () => {
+        pointer.active = false;
+      });
+
+      canvas.addEventListener("contextmenu", event => {
+        event.preventDefault();
+        clearField();
+      });
+
+      window.addEventListener("keydown", event => {
+        if (event.key === "Escape" || event.key.toLowerCase() === "r") {
+          clearField();
+        }
+        if (event.key === " " && voices.length > 0) {
+          event.preventDefault();
+          playSequenceStep();
+        }
+      });
+
+      window.addEventListener("resize", resize);
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden && audio?.state === "running") audio.suspend();
+      });
+      reducedMotion.addEventListener?.("change", () => requestAnimationFrame(drawFrame));
+
+      resize();
+
+      const fieldParameters = new URLSearchParams(window.location.search);
+      if (fieldParameters.has("embed")) {
+        document.body.classList.add("embed");
+      }
+      const codexSeed = !fieldParameters.has("blank");
+      seedAwaitingEntry = codexSeed;
+
+      if (codexSeed) {
+        window.setTimeout(() => {
+          const opening = [
+            [0.32, 0.92, 0.48],
+            [0.46, 0.69, 0.6],
+            [0.62, 0.44, 0.72],
+            [0.7, 0.08, 0.84],
+          ];
+
+          for (const [x, y, force] of opening) {
+            addVoice(width * x, height * y, force, false);
+          }
+        }, 120);
+      }
+
+      requestAnimationFrame(drawFrame);
+
+      window.addEventListener("beforeunload", () => {
+        if (sequenceTimer) window.clearInterval(sequenceTimer);
+        audio?.close();
+      });
+    })();
+  </script>
+</body>
+</html>

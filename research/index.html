@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Map | Phiharmonic</title>
+  <meta name="description" content="Status-aware map of Phiharmonic research: three domain roles, release boundaries, and the medium-transfer question.">
+  <meta name="theme-color" content="#0b0c0f">
+  <link rel="icon" type="image/png" href="/field/assets/codex-emblem.png">
+  <link rel="canonical" href="https://phiharmonic.org/research/">
+  <meta property="og:title" content="Research Map | Phiharmonic">
+  <meta property="og:description" content="Status-aware map of Phiharmonic research: three domain roles, release boundaries, and the medium-transfer question.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://phiharmonic.org/research/">
+  <meta property="og:image" content="https://phiharmonic.org/assets/phiharmonic-preview.png">
+  <meta property="og:site_name" content="Phiharmonic">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    :root {
+      --bg: #0b0c0f;
+      --surface: #14161b;
+      --surface-raised: #1c1f26;
+      --text: #f5f5f0;
+      --text-secondary: #b8bcc4;
+      --muted: #8b919d;
+      --border: #2a2d35;
+      --cyan: #4ecdc4;
+      --coral: #ff6b6b;
+      --amber: #f4a261;
+      --green: #2ecc71;
+      --focus: #4ecdc4;
+      --radius: 6px;
+      --max-content: 1100px;
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 1.5rem;
+      --space-lg: 3rem;
+      --space-xl: 5rem;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+
+    a:hover, a:focus {
+      color: var(--text);
+    }
+
+    a:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      z-index: 200;
+      padding: 0.5rem 1rem;
+      background: var(--surface-raised);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .skip-link:focus {
+      left: var(--space-sm);
+      top: var(--space-sm);
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .nav-inner {
+      max-width: var(--max-content);
+      margin: 0 auto;
+      padding: var(--space-sm) var(--space-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      min-height: 56px;
+    }
+
+    .logo {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      line-height: 1.2;
+    }
+
+    .logo:hover, .logo:focus {
+      color: var(--cyan);
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm) var(--space-md);
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .nav-links a:hover, .nav-links a:focus {
+      color: var(--text);
+    }
+
+    .nav-links a[aria-current="page"] {
+      color: var(--cyan);
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+
+    main {
+      padding: var(--space-xl) var(--space-md);
+    }
+
+    .band {
+      max-width: var(--max-content);
+      margin: 0 auto var(--space-xl);
+    }
+
+    .band:last-child {
+      margin-bottom: 0;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.25;
+      margin: 0 0 var(--space-sm);
+    }
+
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    p {
+      margin: 0 0 var(--space-sm);
+      color: var(--text-secondary);
+    }
+
+    .lead {
+      font-size: 1.15rem;
+      color: var(--text);
+      max-width: 70ch;
+    }
+
+    .question {
+      font-family: Georgia, "Times New Roman", Times, serif;
+      font-size: 2.25rem;
+      font-style: italic;
+      color: var(--text);
+      border-left: 3px solid var(--cyan);
+      padding: var(--space-sm) 0 var(--space-sm) var(--space-md);
+      margin: var(--space-lg) 0;
+      line-height: 1.4;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      gap: var(--space-md);
+      margin-top: var(--space-md);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-md);
+    }
+
+    .panel h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-xs);
+    }
+
+    .panel p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .badge-live {
+      background: rgba(46, 204, 113, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(46, 204, 113, 0.35);
+    }
+
+    .badge-review {
+      background: rgba(244, 162, 97, 0.12);
+      color: var(--amber);
+      border: 1px solid rgba(244, 162, 97, 0.35);
+    }
+
+    .badge-hold {
+      background: rgba(255, 107, 107, 0.12);
+      color: var(--coral);
+      border: 1px solid rgba(255, 107, 107, 0.35);
+    }
+
+    .domain-role {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: var(--space-sm);
+    }
+
+    .work-list {
+      list-style: none;
+      margin: var(--space-md) 0 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+      gap: var(--space-sm);
+    }
+
+    .work-list li {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-sm);
+    }
+
+    .work-list strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 0.15rem;
+    }
+
+    .work-list span {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--coral);
+      border-radius: var(--radius);
+      padding: var(--space-md);
+    }
+
+    .callout h2 {
+      margin-bottom: var(--space-xs);
+    }
+
+    .source-link {
+      display: inline-block;
+      margin-top: var(--space-xs);
+      word-break: break-all;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: var(--space-xs);
+    }
+
+    .divider {
+      border: 0;
+      height: 1px;
+      background: var(--border);
+      margin: var(--space-xl) 0;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: var(--space-lg) var(--space-md);
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (min-width: 1440px) {
+      :root {
+        --max-content: 1200px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: var(--space-sm);
+        gap: var(--space-xs);
+      }
+      .nav-links {
+        gap: var(--space-sm);
+      }
+      main {
+        padding: var(--space-lg) var(--space-sm);
+      }
+      h1 {
+        font-size: 2.1rem;
+      }
+      h2 {
+        font-size: 1.45rem;
+      }
+      .lead {
+        font-size: 1rem;
+      }
+      .question {
+        font-size: 1.65rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <header>
+    <div class="nav-inner">
+      <a class="logo" href="/">Phiharmonic</a>
+      <nav aria-label="Primary">
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/field/">Field</a></li>
+          <li><a href="/light/">Light</a></li>
+          <li><a href="/research/" aria-current="page">Research</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="band" aria-labelledby="research-title">
+      <h1 id="research-title">Research map</h1>
+      <p class="lead">Phiharmonic is a public studio for experiencing and examining patterns as they move through sound, light, matter, instruments, and attention. This page is the status-aware map to the deeper work. It does not reproduce scientific claims; it points to where each claim lives and whether that surface is cleared for public release.</p>
+    </section>
+
+    <section class="band" aria-labelledby="governing-question">
+      <h2 id="governing-question">The governing question</h2>
+      <p class="lead">Every experience on this site is shaped by the same research method:</p>
+      <blockquote class="question">What survives through a medium, under which observation, at what cost?</blockquote>
+      <p class="lead">That question is drawn from the <strong>Medium Transfer Layer</strong> research protocol. It is a way to ask better questions, not a new physics claim.</p>
+    </section>
+
+    <section class="band" aria-labelledby="domain-roles">
+      <h2 id="domain-roles">Three domain roles</h2>
+      <p class="lead">The work is split across three domains so that experience, active research, and reference material stay in their proper places.</p>
+
+      <div class="status-grid">
+        <article class="panel">
+          <h3>phiharmonic.org <span class="badge badge-live">Staged</span></h3>
+          <p class="domain-role">Public studio</p>
+          <p>Visitors encounter an experience first, then inspect the question that shaped it. This rebuild is the staged public surface.</p>
+        </article>
+
+        <article class="panel">
+          <h3>unifiedfield.net <span class="badge badge-review">In review</span></h3>
+          <p class="domain-role">Research Atlas</p>
+          <p>Holds scales, definitions, proofs, simulations, hardware notes, experiments, and no-go routes. The Explorer working tree must pass its own release checklist before it can be promoted.</p>
+        </article>
+
+        <article class="panel">
+          <h3>quantumknowledgebase.com <span class="badge badge-review">In review</span></h3>
+          <p class="domain-role">Reference library</p>
+          <p>Holds definitions, current claims, sources, and open questions. The existing static claim copy must be reconciled before promotion.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="band callout" aria-labelledby="release-hold">
+      <h2 id="release-hold"><span class="badge badge-hold">Hold</span> Fundamentals book and public release</h2>
+      <p>The <em>Fundamentals</em> book, the Explorer working tree, and the Knowledge Base are <strong>not release-cleared</strong>. They are active research material and should not be treated as a finished publication.</p>
+      <a class="source-link" href="https://github.com/gwelby/Fundamentals" rel="noopener noreferrer" target="_blank">open research repository, not a finished publication</a>
+    </section>
+
+    <section class="band" aria-labelledby="work-types">
+      <h2 id="work-types">What the deeper work looks like</h2>
+      <p class="lead">The Research Atlas contains several kinds of activity. None of them are presented as settled scientific conclusions here.</p>
+      <ul class="work-list">
+        <li>
+          <strong>Lean reasoning</strong>
+          <span>Formal statements checked under explicit premises, with their physical scope stated separately.</span>
+        </li>
+        <li>
+          <strong>Simulations</strong>
+          <span>Model outputs used to explore consequences, not to prove physical reality.</span>
+        </li>
+        <li>
+          <strong>Hardware probes</strong>
+          <span>Specified experiments and measured outputs, scoped to exact hardware and limitations.</span>
+        </li>
+        <li>
+          <strong>Audits and no-go routes</strong>
+          <span>Checks that kill bad paths, including pages that are deliberately retired from public navigation.</span>
+        </li>
+      </ul>
+    </section>
+
+    <hr class="divider">
+
+    <section class="band" aria-labelledby="labels">
+      <h2 id="labels">Truth grammar used on this site</h2>
+      <p class="lead">Statements about science or research carry one of these labels so the boundary between evidence and interpretation is visible.</p>
+      <ul class="work-list">
+        <li>
+          <strong>Established</strong>
+          <span>Supported by the cited external scientific source in the stated scope.</span>
+        </li>
+        <li>
+          <strong>Measured here</strong>
+          <span>Directly observed in a named local experiment, with an evidence path.</span>
+        </li>
+        <li>
+          <strong>Model</strong>
+          <span>Output of a specified simulation or formal model.</span>
+        </li>
+        <li>
+          <strong>Interpretation</strong>
+          <span>Consistent with evidence but not required by it.</span>
+        </li>
+        <li>
+          <strong>Open question</strong>
+          <span>Not established; included because it defines a testable frontier.</span>
+        </li>
+      </ul>
+      <p style="margin-top: var(--space-md);">We do not use derived-confidence scores, framework-wide status labels, or stale percentages on Phiharmonic.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; Phiharmonic. <a href="/humans.txt">humans.txt</a></p>
+  </footer>
+</body>
+</html>
