@@ -360,7 +360,7 @@
     }
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 24px;
       margin-top: 40px;
     }
@@ -691,16 +691,16 @@
     <section class="section pricing-band">
       <div class="section-inner">
         <p class="section-label">Engagement types</p>
-        <h2>Three ways to work together.</h2>
+        <h2>Five ways to work together.</h2>
         <p>
-          Start with a discovery call. If there's a fit, we scope the engagement. Prices below are
-          starting points — the actual scope depends on what you're bringing.
+          Start with a free discovery call. If there's a fit, we scope the engagement. Prices are fixed
+          for each tier; the actual deliverable is defined in the proposal.
         </p>
         <div class="pricing-grid">
 
           <div class="price-card">
             <span class="price-name">Discovery</span>
-            <div class="price-amount">$99</div>
+            <div class="price-amount">$0</div>
             <p class="price-desc">30-minute call. You bring one question, I bring the method.</p>
             <ul class="price-features">
               <li>One specific claim, contract, or question</li>
@@ -711,8 +711,8 @@
           </div>
 
           <div class="price-card featured">
-            <span class="price-name">Audit</span>
-            <div class="price-amount">$997</div>
+            <span class="price-name">Bounded Verdict / PQC Audit</span>
+            <div class="price-amount">$1,997</div>
             <p class="price-desc">Full engagement. One system, one claim, one bounded verdict.</p>
             <ul class="price-features">
               <li>Full PQC readiness scan of your contracts</li>
@@ -724,15 +724,41 @@
           </div>
 
           <div class="price-card">
-            <span class="price-name">Engagement</span>
-            <div class="price-amount">$2,497+</div>
-            <p class="price-desc">Multi-system or ongoing. Migration planning, agent architecture, research partnership.</p>
+            <span class="price-name">Verification-Engine Build</span>
+            <div class="price-amount">$9,997</div>
+            <p class="price-desc">Your product gets our hostile-audit chain: hold-clearance, owner-binding, fail-closed tests, receipt integrity.</p>
             <ul class="price-features">
-              <li>Full protocol-suite PQC audit</li>
-              <li>Or: agent ecosystem design consultation</li>
-              <li>Or: ongoing research partnership</li>
-              <li>Migration roadmap with timelines</li>
-              <li>Priority scheduling</li>
+              <li>Built from the Venki verification-companion pattern</li>
+              <li>64/64 test suites, R1–R15 adversarial tests</li>
+              <li>Integrated with your delivery pipeline</li>
+              <li>Engine becomes stronger with each client</li>
+              <li>2–6 week scoped build</li>
+            </ul>
+          </div>
+
+          <div class="price-card">
+            <span class="price-name">Noet Engagement / Red Team</span>
+            <div class="price-amount">$7,500</div>
+            <p class="price-desc">One hard problem attacked from Auditor, Ground, and Skeptic stances until a converged verdict is reached.</p>
+            <ul class="price-features">
+              <li>Assembled cross-agent review</li>
+              <li>Stance library and convergence protocol</li>
+              <li>One bounded verdict with evidence trail</li>
+              <li>Blind-spot coverage vs. single-auditor baseline</li>
+              <li>Fixed-price engagement</li>
+            </ul>
+          </div>
+
+          <div class="price-card">
+            <span class="price-name">Verification Retainer</span>
+            <div class="price-amount">$10k/mo</div>
+            <p class="price-desc">Continuous hostile review of your claims and systems as you ship.</p>
+            <ul class="price-features">
+              <li>Continuous claim/system review</li>
+              <li>Priority scheduling and response</li>
+              <li>Monthly verdict and trend report</li>
+              <li>Your real history becomes our test corpus</li>
+              <li>Cancel any time</li>
             </ul>
           </div>
 
